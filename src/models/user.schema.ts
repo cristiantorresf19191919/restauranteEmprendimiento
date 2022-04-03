@@ -2,12 +2,16 @@ import mongoose from "mongoose";
 import * as bcrypt from "bcrypt"
 
 
-export const UserSchema = new mongoose.Schema({
+export const AccountSchema = new mongoose.Schema({
     email:{type:String, unique: true, required: true},
-    password:{type:String, required: true}
+    password:{type:String, required: true},
+    name:{type:String},
+    phone:{type:String},
+    selectedPlan:{type:String},
+    selectedLocation:{type:String}
 })
 
-UserSchema.pre('save', async function(next){
+AccountSchema.pre('save', async function(next){
     try {    
         if (!this.isModified('password')) {
             return next();
@@ -19,3 +23,4 @@ UserSchema.pre('save', async function(next){
         return next(error);
     }
 })
+

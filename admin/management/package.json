@@ -1,0 +1,33 @@
+{
+  "name": "management",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss7-compat": "^2.2.17",
+    "@vuelidate/core": "^2.0.0-alpha.40",
+    "@vuelidate/validators": "^2.0.0-alpha.28",
+    "autoprefixer": "^9.8.8",
+    "axios": "^0.26.1",
+    "mapbox-gl": "^2.7.1",
+    "mitt": "^3.0.0",
+    "postcss": "^7.0.39",
+    "primeicons": "^5.0.0",
+    "primevue": "^3.12.4",
+    "register-service-worker": "^1.7.2",
+    "vue": "^3.2.13",
+    "vue-mapbox-ts": "^0.8.0",
+    "vue-router": "^4.0.3"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-pwa": "~5.0.0",
+    "@vue/cli-plugin-router": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "sass": "^1.32.7",
+    "sass-loader": "^12.0.0",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.17"
+  }
+}

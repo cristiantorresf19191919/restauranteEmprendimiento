@@ -22,7 +22,7 @@ import { ConfigService } from '@nestjs/config';
           },
         },
         defaults: {
-          from: `"SUper Restaurant App" <${config.get('MAIL_FROM')}>`,
+          from: `"Eatlify" <${config.get('MAIL_FROM')}>`,
         },
         template: {
           dir: join(__dirname, 'templates'),

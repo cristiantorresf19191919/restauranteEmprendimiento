@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UserModule } from './user/user.module';
+import { AccountsModule } from './accounts/accounts.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 
@@ -16,7 +16,7 @@ import { MailModule } from './mail/mail.module';
       useNewUrlParser:true,
       useUnifiedTopology: true,    
     }),
-    UserModule,
+    AccountsModule,
     AuthModule,
     MailModule
   ],
