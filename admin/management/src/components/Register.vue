@@ -165,18 +165,14 @@ const handleMapResult = (result) => {
     console.log("🚀 ~ file: Register.vue ~ line 194 ~ handleMapResult ~ result", result)
 }
 
-const formatCoordenatesString = (str) => {
-    const getLongitudeRegex = /(?:Longitude:)(.*?)<br \/>/gm;
-    const longitude = [...str.matchAll(getLongitudeRegex)][0][1].trim();
-    const getLatitudeRegex =  /Latitude:(.*?)$/g;
-    const latitude = [...str.matchAll(getLatitudeRegex)][0][1].trim();
-    return longitude+","+latitude;
+const formatCoordenatesString = (str = []) => {
+    return str.map(x => String(x).trim()).join(",").trim()
 }
 
 const sendFormData = async () => {
     try {
         const { password2, ...formData } = state;
-        const res = await register({ ...formData, selectedPlan: selectedPlan.value, selectedLocation: formatCoordenates(selectedLocation.value)})
+        const res = await register({ ...formData, selectedPlan: selectedPlan.value, selectedLocation: formatCoordenatesString(selectedLocation.value)})
         console.log("🚀 ~ file: Register.vue ~ line 182 ~ sendFormData ~ res", res)
         p(res.status)
         p(res.response)

@@ -14,6 +14,7 @@ const props = defineProps(['coordenates'])
 
 onMounted(() => {
     mapboxgl.accessToken = 'pk.eyJ1IjoiZWF0bGlmeSIsImEiOiJjbDFpOWJqcm4xc3ZoM2RzOWx0ZGdkcHZ0In0.JQw86zBaDrkWlefj0maVlA';
+    if (!props.coordenates) return
     const map = new mapboxgl.Map({
         container: "map",
         style: 'mapbox://styles/mapbox/streets-v11',

@@ -64,7 +64,7 @@ onMounted(() => {
                 language: 'es'
             }).on('result', (event) => {
                 const [lon, lat] = event?.result?.center;
-                coordenatesInfo.value = [lngLat.lng, lngLat.lat];
+                coordenatesInfo.value = [lon, lat];
                 showToastMsg('La ubicacion de tu restaurante se ha actualizado con exito')
             })
         );

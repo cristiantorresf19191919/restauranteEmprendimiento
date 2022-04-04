@@ -21,7 +21,7 @@ export class AuthController {
         };    
         const token = await this.authService.signPayload(payload);
         // send the email
-        // this.mailService.sendUserConfirmation(user,token);
+        this.mailService.sendUserConfirmation(user,token);
         return { user, token };
       }
 
