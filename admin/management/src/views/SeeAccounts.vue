@@ -1,5 +1,5 @@
 <template>
-    <h1>Ver Cuentas</h1>
+    <h2>Ver Restaurantes</h2>
     <Dialog
         position="top"
         v-model:visible="display"

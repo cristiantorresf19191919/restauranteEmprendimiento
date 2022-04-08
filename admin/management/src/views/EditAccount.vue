@@ -1,91 +1,128 @@
 <template>
-    <Map @location-changed="handleLocationChanged" :location="currentLocation" :name="state.name"/> 
     <Toast />
-    <form @submit.prevent="handleSubmit(!v$.$invalid)" class="p-fluid grid">
-        <div class="field col-12 md:col-4">
-            <span class="p-float-label p-input-icon-right">
-                <i class="pi pi-users" />
-                <InputText
-                    id="inputtext-right"
-                    type="text"
-                    v-model="v$.name.$model"
-                    :class="{ 'p-invalid': v$.name.$invalid && submitted }"
-                />
-                <label for="inputtext-right">Nombre Restaurante</label>
-            </span>
+    <h2>Editar Restaurante</h2>
+    <div class="register-component">
+        <Map @location-changed="handleLocationChanged" :location="currentLocation" :name="state.name" />
+        <div class="card">
+            <form @submit.prevent="handleSubmit(!v$.$invalid)" class="p-fluid grid">
+                <div class="field col-12 md:col-4">
+                    <span class="p-float-label p-input-icon-right">
+                        <i class="pi pi-users" />
+                        <InputText
+                            id="inputtext-right"
+                            type="text"
+                            v-model="v$.name.$model"
+                            :class="{ 'p-invalid': v$.name.$invalid && submitted }"
+                        />
+                        <label for="inputtext-right">Nombre Restaurante</label>
+                    </span>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <span class="p-float-label p-input-icon-right">
+                        <!-- pi-send -->
+                        <i class="pi pi-envelope" />
+                        <InputText
+                            id="inputtext"
+                            type="text"
+                            v-model="v$.email.$model"
+                            :class="{ 'p-invalid': v$.email.$invalid && submitted }"
+                        />
+                        <label for="inputtext">email</label>
+                    </span>
+                    <span v-if="v$.email.$error && submitted">
+                        <span
+                            id="email-error"
+                            v-for="(error, index) of v$.email.$errors"
+                            :key="index"
+                        >
+                            <small class="p-error">El email no es valido</small>
+                        </span>
+                    </span>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <span class="p-float-label">
+                        <Password
+                            v-model="v$.password.$model"
+                            :class="{ 'p-invalid': v$.password.$invalid && submitted }"
+                            toggleMask
+                        />
+                        <label for="inputtext">password</label>
+                    </span>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <span class="p-float-label">
+                        <Password
+                            v-model="v$.password2.$model"
+                            :class="{ 'p-invalid': v$.password2.$invalid && submitted }"
+                            toggleMask
+                        />
+                        <label for="inputtext">Confirma Contraseña</label>
+                    </span>
+                    <span v-if="v$.password2.$error && submitted">
+                        <span
+                            id="email-error"
+                            v-for="(error, index) of v$.password2.$errors"
+                            :key="index"
+                        >
+                            <small class="p-error">La contraseña no coincide</small>
+                        </span>
+                    </span>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <span class="p-float-label">
+                        <InputMask
+                            mask="999 999 9999"
+                            v-model="state.phone"
+                            placeholder="Telefono"
+                        />
+                    </span>
+                </div>
+                <div class="field col-12 md:col-4">
+                    <span class="p-float-label">
+                        <Dropdown
+                            v-model="selectedPlan"
+                            :options="planList"
+                            optionLabel="name"
+                            optionValue="name"
+                            placeholder="Selecciona un Plan"
+                        />
+                    </span>
+                </div>
+                      <div class="field col-12">
+                    <span class="p-float-label">
+                        <h5>Sube tu foto de portada</h5>
+                        <FileUpload
+                            name="restaurantImages[]"                   
+                            @select="onImageSelected"
+                            @remove="onImageRemoved"
+                            :multiple="false"
+                            chooseLabel="Escoger"
+                            uploadLabel="Subir"
+                            cancelLabel="Actualizar"
+                            accept="image/*"
+                            :maxFileSize="10000000"
+                        >
+                            <template #empty>
+                                <p>Arrastra y suelta los archivos aca para guardar.</p>
+                            </template>
+                        </FileUpload>
+                    </span>
+                </div>
+                <div class="field col-12 btn-cta-register" v-if="completed >= 71">
+                    <span class="p-float-label" style="width: 20rem;">
+                        <Button
+                            type="submit"
+                            label="Enviar"
+                            class="p-button-raised p-button-primary p-button-text"
+                        />
+                    </span>
+                </div>
+                <div class="field col-12">
+                    <Knob v-model="completed" :showValue="true" readonly />
+                </div>
+            </form>
         </div>
-        <div class="field col-12 md:col-4">
-            <span class="p-float-label p-input-icon-right">
-                <!-- pi-send -->
-                <i class="pi pi-envelope" />
-                <InputText
-                    id="inputtext"
-                    type="text"
-                    v-model="v$.email.$model"
-                    :class="{ 'p-invalid': v$.email.$invalid && submitted }"
-                />
-                <label for="inputtext">email</label>
-            </span>
-            <span v-if="v$.email.$error && submitted">
-                <span id="email-error" v-for="(error, index) of v$.email.$errors" :key="index">
-                    <small class="p-error">El email no es valido</small>
-                </span>
-            </span>
-        </div>
-        <div class="field col-12 md:col-4">
-            <span class="p-float-label">
-                <Password
-                    v-model="v$.password.$model"
-                    :class="{ 'p-invalid': v$.password.$invalid && submitted }"
-                    toggleMask
-                />
-                <label for="inputtext">password</label>
-            </span>
-        </div>
-        <div class="field col-12 md:col-4">
-            <span class="p-float-label">
-                <Password
-                    v-model="v$.password2.$model"
-                    :class="{ 'p-invalid': v$.password2.$invalid && submitted }"
-                    toggleMask
-                />
-                <label for="inputtext">Confirma Contraseña</label>
-            </span>
-            <span v-if="v$.password2.$error && submitted">
-                <span id="email-error" v-for="(error, index) of v$.password2.$errors" :key="index">
-                    <small class="p-error">La contraseña no coincide</small>
-                </span>
-            </span>
-        </div>
-        <div class="field col-12 md:col-4">
-            <span class="p-float-label">
-                <InputMask mask="999 999 9999" v-model="state.phone" placeholder="Telefono" />
-            </span>
-        </div>
-        <div class="field col-12 md:col-4">
-            <span class="p-float-label">
-                <Dropdown
-                    v-model="selectedPlan"
-                    :options="planList"
-                    optionLabel="name"
-                    optionValue="name"
-                    placeholder="Selecciona un Plan"
-                />
-            </span>
-        </div>
-        <div class="field col-12 btn-cta-register" v-if="completed >= 71">
-            <span class="p-float-label" style="width: 20rem;">
-                <Button
-                    type="submit"
-                    label="Enviar"
-                    class="p-button-raised p-button-primary p-button-text"
-                />
-            </span>
-        </div>
-        <div class="field col-12">
-            <Knob v-model="completed" :showValue="true" readonly />
-        </div>
-    </form>
+    </div>
 </template>
 
 <script setup>
@@ -104,7 +141,9 @@ const toast = useToast();
 const submitted = ref(false);
 const selectedPlan = ref();
 const selectedLocation = ref();
-const currentLocation = ref()
+const currentLocation = ref();
+const imageFileSeleceted = ref();
+
 
 const planList = ref([
     { name: 'Bronce' },
@@ -120,7 +159,7 @@ const state = reactive({
     password2: '',
     phone: ''
 });
-const arrayCoordenates = (coordStr = "") =>  coordStr.trim().split(',').map(o => parseFloat(o.trim()));
+const arrayCoordenates = (coordStr = "") => coordStr.trim().split(',').map(o => parseFloat(o.trim()));
 //" -74.11928214843881, 4.659117705413166"
 // [-74.545,4.645545]
 onMounted(async () => {
@@ -135,17 +174,27 @@ onMounted(async () => {
 })
 const mustBeEqual = () => state.password === state.password2
 
+const onImageSelected = (event, event2) => {
+    if (!Array.isArray(event.files)) return 
+    imageFileSeleceted.value= event.files[0]
+}
+
+const onImageRemoved = (event) => {
+    imageFileSeleceted.value = "";
+}
+
 const rules = {
     name: { required },
     email: { required, email },
     phone: { required },
     password: {},
-    password2: {  }
+    password2: {}
 };
 const completed = computed(() => {
     const inputList = Object.values(state);
     inputList.push(selectedPlan.value);
     inputList.push(selectedLocation.value);
+    inputList.push(imageFileSeleceted.value);
     const completedInputs = inputList.map(x => x ? 1 : 0).reduce((ac, cv) => ac + cv, 0);
     console.log("🚀 ~ file: Register.vue ~ line 48 ~ completed ~ average", completedInputs)
     const singleStep = 100 / inputList.length;
@@ -174,26 +223,28 @@ const handleSubmit = (isFormValid) => {
 }
 
 const formatCoordenatesString = (str) => {
-    const res  = str.join(",");
+    const res = str.join(",");
     return res;
 }
 
 const sendFormData = async () => {
     try {
-        console.log("location > 😉 ",selectedLocation.value)
+        console.log("location > 😉 ", selectedLocation.value)
         const { password2, ...formData } = state;
         if (!formData.password) {
             delete formData.password
         }
-        const body = { ...formData, 
+        const body = {
+            ...formData,
             selectedPlan: selectedPlan.value,
-            selectedLocation: formatCoordenatesString(selectedLocation.value) }
-     
+            selectedLocation: formatCoordenatesString(selectedLocation.value)
+        }
+
         const res = await updateRequest('accounts', props.id, { ...body })
-        console.log("🚀 ~ file: update.vue ~ line 182 ~ sendFormData ~ res", res)   
+        console.log("🚀 ~ file: update.vue ~ line 182 ~ sendFormData ~ res", res)
         if (res.request.status !== 200) {
             return toast.add({ severity: 'error', summary: 'Error', detail: res.response.data.message, life: 3000 });
-        }       
+        }
         return toast.add({ severity: 'success', summary: 'Excelent', detail: 'La cuenta se ha actualizado con exito', life: 3000 });
     } catch (error) {
         console.log("🚀 ~ file: Register.vue ~ line 67 ~ sendFormData ~ error", error)
@@ -203,10 +254,17 @@ const sendFormData = async () => {
 const handleLocationChanged = (locationChanged) => {
     selectedLocation.value = locationChanged
     currentLocation.value = locationChanged
-    };
+};
 
 
 </script>
 
 <style lang="scss" scoped>
+.register-component {
+    display: flex;
+    gap: 1rem;
+    .card {
+        flex: 1;
+    }
+}
 </style>

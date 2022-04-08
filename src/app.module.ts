@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AccountsModule } from './accounts/accounts.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AccountsModule } from './accounts/accounts.module';
 import { AuthModule } from './auth/auth.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { MailModule } from './mail/mail.module';
+import { Cloudinary } from './cloudinary';
 
 @Module({
   imports: [
@@ -18,9 +20,10 @@ import { MailModule } from './mail/mail.module';
     }),
     AccountsModule,
     AuthModule,
-    MailModule
+    MailModule,
+    CloudinaryModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, Cloudinary],
 })
 export class AppModule {}

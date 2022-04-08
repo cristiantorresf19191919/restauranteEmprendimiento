@@ -22,12 +22,14 @@ import Column from 'primevue/column';
 import ColumnGroup from 'primevue/columngroup';     //optional for column grouping
 import Row from 'primevue/row';                     //optional for row
 import Dialog from 'primevue/dialog';
+import FileUpload from 'primevue/fileupload';
 
 
 const app = createApp(App)
 app.use(router).use(PrimeVue,{ripple:true})
 app.use(ToastService)
 app.use(VueMapboxTs)
+app.component('FileUpload',FileUpload)
 app.component('Ripple',Ripple)
 app.component('InputText',InputText)
 app.component('Button',Button)

@@ -1,16 +1,18 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Account} from 'src/types/user';
 import { LoginDTO, RegisterDTO } from './register.dto';
 import * as bcrypt from "bcrypt"
 import { Payload } from 'src/types/payload';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 
 @Injectable()
 export class AccountService {
     constructor(
-        @InjectModel('Accounts') private accountsModel: Model<Account>
+        @InjectModel('Accounts') private accountsModel: Model<Account>,
+        @Inject(CloudinaryService) private readonly cloudinaryService : CloudinaryService
     ){}
 
     async findAll():Promise<Account[]>{
@@ -42,13 +44,15 @@ export class AccountService {
       return true;
     }
 
-    async create(registerDTO: RegisterDTO):Promise<Account> {
+    async create(registerDTO: RegisterDTO, file: Express.Multer.File):Promise<Account> {
         const { email } = registerDTO;
+        const {url} = await this.handleFileUpload(file);
+        console.log("🚀 ~ file: accounts.service.ts ~ line 50 ~ AccountService ~ create ~ url", url)
         const user = await this.accountsModel.findOne({ email });
         if (user) {
           throw new HttpException('El email registrado ya se encuentra en uso', HttpStatus.BAD_REQUEST);
-        }
-        const createdUser = new this.accountsModel(registerDTO);
+        } 
+        const createdUser = new this.accountsModel({...registerDTO, imageUrl:url});
         await createdUser.save();
         return this.sanitizeUser(createdUser);
       }
@@ -70,6 +74,16 @@ export class AccountService {
         const { email } = payload;
         return this.accountsModel.findOne({ email });
       }
+
+      handleFileUpload(file: Express.Multer.File){
+        try {
+          return this.cloudinaryService.uploadImage(file);
+        } catch (error) {
+          console.log("🚀 ~ file: accounts.service.ts ~ line 81 ~ AccountService ~ handleFileUpload ~ error", error)
+        }
+      }
+
+
    // return user object without password
       sanitizeUser(user: Account): Account {
         const sanitized = user.toObject() as Account;

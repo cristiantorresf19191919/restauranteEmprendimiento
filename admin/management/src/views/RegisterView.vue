@@ -1,6 +1,6 @@
 <template>
 
-    <h1>Registrar Restaurante</h1>
+    <h2>Registrar Restaurante</h2>
     <Register/>
 
 </template> 

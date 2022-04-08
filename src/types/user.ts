@@ -8,4 +8,5 @@ export interface Account extends Document {
     phone?:string;
     selectedPlan?:string;
     selectedLocation?:string;
+    imageUrl?:string;
 }

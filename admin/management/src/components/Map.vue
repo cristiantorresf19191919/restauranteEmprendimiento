@@ -1,6 +1,6 @@
 <template>
     <div class="map-container">
-        <div id="map" style="height:15rem; margin-bottom:1rem"></div>
+        <div id="map"></div>
         <div id="coordinates" class="coordinates" v-if="coordenatesInfo">
             <span>longitud: {{ coordenatesInfo[0] }}</span> |
             <span>latitud: {{ coordenatesInfo[1] }}</span>
@@ -79,6 +79,10 @@ watch(coordenatesInfo, function (newValue, oldValue) {
 <style lang="scss">
 .map-container {
     position: relative;
+    flex-basis: 39rem;
+    #map{
+        height: 100%;
+    }
 }
 .coordinates {
     background: rgba(0, 0, 0, 0.5);
