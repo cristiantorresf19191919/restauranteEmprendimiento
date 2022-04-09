@@ -2,8 +2,16 @@
     <Toast />
     <h2>Editar Restaurante</h2>
     <div class="register-component">
-        <Map @location-changed="handleLocationChanged" :location="currentLocation" :name="state.name" />
+
+        
+        <Map 
+            @location-changed="handleLocationChanged"
+            :location="selectedLocation"
+            :IsFormEditing="completed"
+            :name="state.name" />
+        
         <div class="card">
+            
             <form @submit.prevent="handleSubmit(!v$.$invalid)" class="p-fluid grid">
                 <div class="field col-12 md:col-4">
                     <span class="p-float-label p-input-icon-right">
@@ -96,18 +104,23 @@
                             @select="onImageSelected"
                             @remove="onImageRemoved"
                             :multiple="false"
-                            chooseLabel="Escoger"
-                            uploadLabel="Subir"
-                            cancelLabel="Actualizar"
+                            chooseLabel="Editar"
+                            :showCancelButton="false"                            
+                            :showUploadButton="false"                         
                             accept="image/*"
                             :maxFileSize="10000000"
                         >
                             <template #empty>
-                                <p>Arrastra y suelta los archivos aca para guardar.</p>
+                                <div v-if="imageFileSeleceted" class="image-container">
+                                    <img :src="imageFileSeleceted" alt="foto">                                                
+                                </div>
+                                <div v-else>
+                                    <p>Arrastra y suelta los archivos aca para guardar.</p>
+                                </div>
                             </template>
                         </FileUpload>
                     </span>
-                </div>
+                </div>                
                 <div class="field col-12 btn-cta-register" v-if="completed >= 71">
                     <span class="p-float-label" style="width: 20rem;">
                         <Button
@@ -133,7 +146,9 @@ import { computed } from '@vue/reactivity';
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
 import { useToast } from "primevue/usetoast";
+import { useRouter, useRoute } from 'vue-router'
 import Map from "@/components/Map.vue"
+import axios from 'axios';
 
 const props = defineProps(['id'])
 const account = ref()
@@ -142,6 +157,9 @@ const submitted = ref(false);
 const selectedPlan = ref();
 const selectedLocation = ref();
 const currentLocation = ref();
+const router = useRouter()
+
+currentLocation.value = [-74.00400424469672,5.0265836334697696]
 const imageFileSeleceted = ref();
 
 
@@ -159,18 +177,18 @@ const state = reactive({
     password2: '',
     phone: ''
 });
-const arrayCoordenates = (coordStr = "") => coordStr.trim().split(',').map(o => parseFloat(o.trim()));
-//" -74.11928214843881, 4.659117705413166"
-// [-74.545,4.645545]
+
+
 onMounted(async () => {
     const response = await fetchById('accounts', props.id);
-    account.value = response.data
-    state.name = response.data.name;
-    state.email = response.data.email;
-    state.phone = response.data.phone;
+    const {name, email, phone} = response.data;
+    state.name = name;
+    state.email = email;
+    state.phone = phone;
     selectedPlan.value = response.data.selectedPlan;
-    currentLocation.value = arrayCoordenates(response.data.selectedLocation);
-    selectedLocation.value = arrayCoordenates(response.data.selectedLocation)
+    currentLocation.value = response.data.selectedLocation;
+    selectedLocation.value = response.data.selectedLocation;
+    imageFileSeleceted.value = response.data.imageUrl
 })
 const mustBeEqual = () => state.password === state.password2
 
@@ -196,7 +214,6 @@ const completed = computed(() => {
     inputList.push(selectedLocation.value);
     inputList.push(imageFileSeleceted.value);
     const completedInputs = inputList.map(x => x ? 1 : 0).reduce((ac, cv) => ac + cv, 0);
-    console.log("🚀 ~ file: Register.vue ~ line 48 ~ completed ~ average", completedInputs)
     const singleStep = 100 / inputList.length;
     return Math.trunc(singleStep * completedInputs)
 })
@@ -214,16 +231,17 @@ const resetForm = () => {
 
 const v$ = useVuelidate(rules, state);
 
-const handleSubmit = (isFormValid) => {
+const handleSubmit =  (isFormValid) => {
     submitted.value = true;
     if (!isFormValid) {
         return;
     }
-    sendFormData();
+    sendFormData().then(x => router.push({name: 'see Accounts'}));
 }
 
 const formatCoordenatesString = (str) => {
-    const res = str.join(",");
+    console.log("🚀 ~ file: EditAccount.vue ~ line 236 ~ formatCoordenatesString ~ str", str)
+    const res = str?.join(",");
     return res;
 }
 
@@ -234,14 +252,31 @@ const sendFormData = async () => {
         if (!formData.password) {
             delete formData.password
         }
+        //formData = {name,phone,email}
         const body = {
-            ...formData,
+        ...formData,
             selectedPlan: selectedPlan.value,
-            selectedLocation: formatCoordenatesString(selectedLocation.value)
+            selectedLocation: JSON.stringify(selectedLocation.value)
         }
+        const formDataInstance = new FormData();
 
-        const res = await updateRequest('accounts', props.id, { ...body })
-        console.log("🚀 ~ file: update.vue ~ line 182 ~ sendFormData ~ res", res)
+        formDataInstance.append('image',imageFileSeleceted.value,imageFileSeleceted.value.name)
+
+        for (let key in body){
+            formDataInstance.append(key,body[key])
+        }   
+
+        const id = props.id;
+         
+        const url = process.env.VUE_APP_URL;
+
+        const res = await axios({
+                method: "put",
+                url:`${url}/accounts/${id}`,
+                data: formDataInstance,
+                headers: {"Content-Type":"multipart/form-data"}
+            });
+        console.log("🚀 ~ file: EditAccount.vue ~ line 270 ~ sendFormData ~ res", res)
         if (res.request.status !== 200) {
             return toast.add({ severity: 'error', summary: 'Error', detail: res.response.data.message, life: 3000 });
         }
@@ -265,6 +300,17 @@ const handleLocationChanged = (locationChanged) => {
     gap: 1rem;
     .card {
         flex: 1;
+    }
+}
+
+.image-container{
+        width: 6rem;
+    margin: 0 auto;
+    position: absolute;
+    top: -77px;
+    left: 0;
+    img{
+            width: 100%;
     }
 }
 </style>

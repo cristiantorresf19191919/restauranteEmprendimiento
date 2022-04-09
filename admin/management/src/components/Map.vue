@@ -2,8 +2,8 @@
     <div class="map-container">
         <div id="map"></div>
         <div id="coordinates" class="coordinates" v-if="coordenatesInfo">
-            <span>longitud: {{ coordenatesInfo[0] }}</span> |
-            <span>latitud: {{ coordenatesInfo[1] }}</span>
+            <span>longitud: {{ coordenatesInfo.longitude }}</span> |
+            <span>latitud: {{ coordenatesInfo.latitude }}</span>
         </div>
         <div class="coordinates" v-if="!coordenatesInfo && location">
             <span>longitud: {{ location[0] }}</span> |
@@ -13,34 +13,43 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, onUpdated } from 'vue';
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { useToast } from "primevue/usetoast";
 const toast = useToast();
-const props = defineProps(['location','name'])
-console.log("🚀 ~ file: Map.vue ~ line 21 ~ props", props)
-
+const props = defineProps(['location', 'name','IsFormEditing'])
+const location = ref(props.location)
 const coordenatesInfo = ref();
+coordenatesInfo.value = props.location;
+
 const emit = defineEmits(['locationChanged'])
 function showToastMsg(detail) {
     toast.add({ severity: 'success', summary: 'Excelent', detail, life: 1000 });
 }
-onMounted(() => {
+
+function loadMap() {
+    console.log("🚀 ~ file: Map.vue ~ line 23 ~ props", props)
     mapboxgl.accessToken = 'pk.eyJ1IjoiZWF0bGlmeSIsImEiOiJjbDFpOWJqcm4xc3ZoM2RzOWx0ZGdkcHZ0In0.JQw86zBaDrkWlefj0maVlA';
-    coordenatesInfo.value = props.location;
-    const map = new mapboxgl.Map({
+    console.log("🚀 ~ file: Map.vue ~ line 33 ~ onMounted ~ props.location", props.location)
+    const mapSettings = {
         container: "map",
         style: 'mapbox://styles/mapbox/streets-v11',
-        center: !props?.location ? [-74.08083, 4.59889] : props.location,
-        zoom: 9
-    });
+        zoom: 5
+    }
+    if (props.location) {
+        const {longitude, latitude} = props.location;
+        mapSettings.center = [longitude,latitude];
+        mapSettings.zoom = 12;
+    }
+    const map = new mapboxgl.Map(mapSettings);
+    const markerLocation = props.location ? [props.location.longitude,props.location.latitude] : [-74.564564, 20.654564];
     map.on('load', () => {
         const marker1 = new mapboxgl.Marker(
             { draggable: true }
         )
-            .setLngLat(!props?.location ? [-74.08083, 4.59889] : props.location)
+            .setLngLat(markerLocation)
             .setPopup(
                 new mapboxgl.Popup({ offset: 25 }) // add popups
                     .setHTML(
@@ -49,8 +58,9 @@ onMounted(() => {
             )
             .addTo(map)
             .on('dragend', () => {
-                const lngLat = marker1.getLngLat();
-                coordenatesInfo.value = [lngLat.lng, lngLat.lat];
+                const lngLat = marker1.getLngLat();                
+                coordenatesInfo.value = {longitude: lngLat.lng, latitude:lngLat.lat};
+                emit("locationChanged", coordenatesInfo.value)
                 showToastMsg('La ubicacion de tu restaurante se ha actualizado con exito')
             });
         map.addControl(
@@ -63,24 +73,59 @@ onMounted(() => {
                 reverseGeocode: true,
                 language: 'es'
             }).on('result', (event) => {
-                const [lon, lat] = event?.result?.center;
-                coordenatesInfo.value = [lon, lat];
+                const [lon, lat] = event?.result?.center;               
+                coordenatesInfo.value = {longitude: lon, latitude:lat};
+                emit("locationChanged", coordenatesInfo.value)           
                 showToastMsg('La ubicacion de tu restaurante se ha actualizado con exito')
             })
         );
+        map.addControl(
+            new mapboxgl.GeolocateControl({
+                positionOptions: {
+                    enableHighAccuracy: true,
+                },
+                showUserLocation: true,
+                // When active the map will receive updates to the device's location as it changes.
+                trackUserLocation: true,
+                // Draw an arrow next to the location dot to indicate which direction the device is heading.
+                showUserHeading: true,                
+            }).on('geolocate', (coordenates) => {            
+                const {latitude, longitude } = coordenates?.coords;               
+                coordenatesInfo.value = {longitude, latitude};
+                     marker1.setLngLat([longitude, latitude])
+                emit("locationChanged", coordenatesInfo.value)
+                // showToastMsg('La ubicacion de tu restaurante se ha actualizado con exito')
+            })
+        )
     });
+}
+
+
+onMounted(() => {
+    loadMap()
 })
 
-watch(coordenatesInfo, function (newValue, oldValue) {
-    emit("locationChanged", newValue)
-});
+onUpdated(() => {
+    if (!props?.location) return
+    // eliminar renders infinitos
+    props.IsFormEditing
+    console.log("🚀 ~ file: Map.vue ~ line 111 ~ onUpdated ~ props.IsFormEditing", props.IsFormEditing)
+    if(props.IsFormEditing >= 75) return
+    loadMap()
+})
+
+
+// watch(coordenatesInfo, function (newValue, oldValue) {
+//     if(!newValue) return
+    
+// });
 
 </script>
 <style lang="scss">
 .map-container {
     position: relative;
     flex-basis: 39rem;
-    #map{
+    #map {
         height: 100%;
     }
 }

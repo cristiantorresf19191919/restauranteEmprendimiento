@@ -119,8 +119,6 @@
                         />
                     </span>
                 </div>
-                <h3>ejemplo input file</h3>
-                <input type="file" @change="onFileChange">
                 <!-- <RegisterInfo :formValues="state" :selectedPlan="selectedPlan" /> -->
                 <div class="field col-12">
                     <Knob v-model="completed" :showValue="true" readonly />
@@ -135,6 +133,7 @@ import { register } from '@/utils/request';
 import { computed } from '@vue/reactivity';
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
+import { useRouter, useRoute } from 'vue-router'
 import { useToast } from "primevue/usetoast";
 import { ref, reactive, onMounted } from 'vue';
 import RegisterInfo from './RegisterInfo'
@@ -146,6 +145,7 @@ const submitted = ref(false);
 const selectedPlan = ref();
 const selectedLocation = ref();
 const imageFileSeleceted = ref()
+const router = useRouter()
 const planList = ref([
     { name: 'Bronce' },
     { name: 'Plata' },
@@ -160,7 +160,7 @@ const state = reactive({
     phone: ''
 });
 
-const onImageSelected = (event, event2) => {
+const onImageSelected = (event) => {
     if (!Array.isArray(event.files)) return
     imageFileSeleceted.value = event.files[0];
 }
@@ -172,7 +172,6 @@ const onImageRemoved = (event) => {
 }
 
 const onImageUploaded = (event) => {
-console.log("🚀 ~ file: Register.vue ~ line 174 ~ onImageUploaded ~ event", event)
 
 }
 
@@ -221,20 +220,21 @@ const resetForm = () => {
 }
 const v$ = useVuelidate(rules, state);
 
-const handleSubmit = (isFormValid) => {
+const handleSubmit = async (isFormValid) => {
     submitted.value = true;
     if (!isFormValid) {
         return;
     }
-    sendFormData();
+    await sendFormData();
+    //enviar a otra ruta cached
+      router.push({
+        name: 'see Accounts'
+    })
+
 }
 
 const handleMapResult = (result) => {
     console.log("🚀 ~ file: Register.vue ~ line 194 ~ handleMapResult ~ result", result)
-}
-
-const formatCoordenatesString = (str = []) => {
-    return str.map(x => String(x).trim()).join(",").trim()
 }
 
 const sendFormData = async () => {
@@ -243,7 +243,7 @@ const sendFormData = async () => {
         const bodyPayload = {
             ...formData, 
             selectedPlan: selectedPlan.value,
-            selectedLocation: formatCoordenatesString(selectedLocation.value),            
+            selectedLocation: JSON.stringify(selectedLocation.value),            
         }
         console.log("🚀 ~ file: Register.vue ~ line 263 ~ sendFormData ~ bodyPayload", bodyPayload);
         let formDataInstance = new FormData();
@@ -278,7 +278,10 @@ const sendFormData = async () => {
     }
 }
 
-const handleLocationChanged = (locationChanged) => selectedLocation.value = locationChanged;
+const handleLocationChanged = (locationChanged) => {
+    console.log("🚀 ~ file: Register.vue ~ line 279 ~ handleLocationChanged ~ locationChanged", locationChanged)
+    selectedLocation.value = locationChanged
+};
 
 
 </script>
