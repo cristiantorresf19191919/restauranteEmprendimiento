@@ -18,14 +18,14 @@ export class AuthController {
       @UseInterceptors(FileInterceptor('image'))
       async register(@Body() registerDTO: RegisterDTO, @UploadedFile() file: Express.Multer.File) {     
       console.log("🚀 ~ file: auth.controller.ts ~ line 20 ~ AuthController ~ register ~ file", file)
-      console.log("🚀 ~ file: auth.controller.ts ~ line 20 ~ AuthController ~ register ~ registerDTO", registerDTO)
+      console.log("🚀 ~ Location", registerDTO.selectedLocation)
       const user:Account = await this.accountService.create(registerDTO, file);
       const payload = {        
           email: user.email,
         };    
         const token = await this.authService.signPayload(payload);
         // send the email
-        // this.mailService.sendUserConfirmation(user,token);
+        this.mailService.sendUserConfirmation(user,token);
         return { user, token };       
       }
 

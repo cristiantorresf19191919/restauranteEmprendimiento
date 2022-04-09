@@ -25,34 +25,31 @@ export class AccountService {
       return user;
     }
 
-    async update(id:string, updatedBody:RegisterDTO):Promise<Account>{
+    async update(id:string, registerDTO:RegisterDTO, file: Express.Multer.File):Promise<Account>{
       const user = await this.accountsModel.findById(id).exec();
       let hashed = "";
-      const body = {...updatedBody};
-      if (updatedBody.password){
+      const {url} = await this.handleFileUpload(file);
+      const selectedLocation = JSON.parse(registerDTO.selectedLocation);
+      const document = {...registerDTO, selectedLocation}
+      if (registerDTO.password){
         hashed = await bcrypt.hash(user.password , 10);
-        body.password = hashed;
+        document.password = hashed;
       }
-      const updated = await this.accountsModel.findByIdAndUpdate(id,{...body},{new:true}).exec()      
+      const updated = await this.accountsModel.findByIdAndUpdate(id,{...document,imageUrl:url},{new:true}).exec()      
       this.handleUserNotFoundById(user);
       return updated;
     }
-
-    async delete(id:string):Promise<boolean>{
-      const deleted = await this.accountsModel.findByIdAndDelete(id);
-      this.handleUserNotFoundById(deleted);
-      return true;
-    }
-
+  
     async create(registerDTO: RegisterDTO, file: Express.Multer.File):Promise<Account> {
         const { email } = registerDTO;
         const {url} = await this.handleFileUpload(file);
-        console.log("🚀 ~ file: accounts.service.ts ~ line 50 ~ AccountService ~ create ~ url", url)
         const user = await this.accountsModel.findOne({ email });
         if (user) {
           throw new HttpException('El email registrado ya se encuentra en uso', HttpStatus.BAD_REQUEST);
         } 
-        const createdUser = new this.accountsModel({...registerDTO, imageUrl:url});
+        const selectedLocation = JSON.parse(registerDTO.selectedLocation);
+        const document = {...registerDTO, selectedLocation}
+        const createdUser = new this.accountsModel({...document, imageUrl:url});
         await createdUser.save();
         return this.sanitizeUser(createdUser);
       }
@@ -73,6 +70,10 @@ export class AccountService {
       async findByPayload(payload: Payload): Promise<Account> {
         const { email } = payload;
         return this.accountsModel.findOne({ email });
+      }
+
+      async delete(id: string):Promise<boolean>{
+        return this.accountsModel.findByIdAndDelete(id);
       }
 
       handleFileUpload(file: Express.Multer.File){

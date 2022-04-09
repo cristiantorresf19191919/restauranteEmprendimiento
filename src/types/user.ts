@@ -7,6 +7,9 @@ export interface Account extends Document {
     name?:string;
     phone?:string;
     selectedPlan?:string;
-    selectedLocation?:string;
+    selectedLocation?:{
+        latitude:string;
+        longitude:string;
+    };
     imageUrl?:string;
 }
