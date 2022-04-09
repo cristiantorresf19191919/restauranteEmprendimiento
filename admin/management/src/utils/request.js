@@ -47,3 +47,12 @@ export async function fetchById(domain, id){
   }
 
 }
+
+export async function deleteById(domain,id){
+  try {
+    const res = await axios.delete(`${url}/${domain}/${id}`, header );
+    return res;
+  } catch (error) {
+    console.log(error);
+  }
+}

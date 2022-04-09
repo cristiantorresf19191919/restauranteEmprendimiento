@@ -8,7 +8,11 @@ export const AccountSchema = new mongoose.Schema({
     name:{type:String},
     phone:{type:String},
     selectedPlan:{type:String},
-    selectedLocation:{type:String}
+    selectedLocation:{
+        longitude:String,
+        latitude:String
+    },
+    imageUrl:{type:String}
 })
 
 AccountSchema.pre('save', async function(next){

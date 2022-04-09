@@ -5,6 +5,7 @@ export interface RegisterDTO {
     phone:string; 
     selectedPlan:string;
     selectedLocation:string;
+    image:string;
   }
 
 export interface LoginDTO {
