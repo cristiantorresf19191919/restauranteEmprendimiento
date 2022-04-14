@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AccountsModule } from './accounts/accounts.module';
+import { RestaurantsModule } from './restaurants/restaurants.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -18,7 +18,7 @@ import { Cloudinary } from './cloudinary';
       useNewUrlParser:true,
       useUnifiedTopology: true,    
     }),
-    AccountsModule,
+    RestaurantsModule,
     AuthModule,
     MailModule,
     CloudinaryModule
