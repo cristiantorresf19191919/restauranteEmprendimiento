@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import * as bcrypt from "bcrypt"
 
 
-export const AccountSchema = new mongoose.Schema({
+export const RestaurantSchema = new mongoose.Schema({
     email:{type:String, unique: true, required: true},
     password:{type:String, required: true},
     name:{type:String},
@@ -12,10 +12,14 @@ export const AccountSchema = new mongoose.Schema({
         longitude:String,
         latitude:String
     },
-    imageUrl:{type:String}
+    image:{
+        type:Object,
+        id:String,
+        url:String
+    }
 })
 
-AccountSchema.pre('save', async function(next){
+RestaurantSchema.pre('save', async function(next){
     try {    
         if (!this.isModified('password')) {
             return next();

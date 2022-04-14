@@ -1,7 +1,7 @@
 import {Document} from "mongoose";
 
 
-export interface Account extends Document {
+export interface Restaurant extends Document {
     email: string;
     password?: string;
     name?:string;
@@ -11,5 +11,8 @@ export interface Account extends Document {
         latitude:string;
         longitude:string;
     };
-    imageUrl?:string;
+    image?:{
+        id?:string,
+        url?:string
+    }
 }

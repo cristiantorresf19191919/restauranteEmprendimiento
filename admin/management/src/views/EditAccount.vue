@@ -2,16 +2,14 @@
     <Toast />
     <h2>Editar Restaurante</h2>
     <div class="register-component">
-
-        
-        <Map 
+        <MapAsync
             @location-changed="handleLocationChanged"
             :location="selectedLocation"
             :IsFormEditing="completed"
-            :name="state.name" />
-        
+            :name="state.name"
+        />
+
         <div class="card">
-            
             <form @submit.prevent="handleSubmit(!v$.$invalid)" class="p-fluid grid">
                 <div class="field col-12 md:col-4">
                     <span class="p-float-label p-input-icon-right">
@@ -96,23 +94,29 @@
                         />
                     </span>
                 </div>
-                      <div class="field col-12">
+                <div class="field col-12">
                     <span class="p-float-label">
                         <h5>Sube tu foto de portada</h5>
                         <FileUpload
-                            name="restaurantImages[]"                   
+                            name="restaurantImages[]"
                             @select="onImageSelected"
                             @remove="onImageRemoved"
                             :multiple="false"
                             chooseLabel="Editar"
-                            :showCancelButton="false"                            
-                            :showUploadButton="false"                         
+                            :showCancelButton="false"
+                            :showUploadButton="false"
+                            :previewWidth="200"
                             accept="image/*"
                             :maxFileSize="10000000"
                         >
                             <template #empty>
-                                <div v-if="imageFileSeleceted" class="image-container">
-                                    <img :src="imageFileSeleceted" alt="foto">                                                
+                                <div v-if="imageFileSeleceted" class="p-fileupload-files">
+                                    <div class="p-fileupload-row" style="width:16rem;margin:0 auto;">
+                                        <div class="image-container">
+                                            <img :src="imageFileSeleceted" role="presentation" :alt="imageFileSeleceted.name">
+                                        </div>                                    
+                                    </div>
+                                    <!-- <img :src="imageFileSeleceted" alt="foto" /> -->
                                 </div>
                                 <div v-else>
                                     <p>Arrastra y suelta los archivos aca para guardar.</p>
@@ -120,7 +124,7 @@
                             </template>
                         </FileUpload>
                     </span>
-                </div>                
+                </div>
                 <div class="field col-12 btn-cta-register" v-if="completed >= 71">
                     <span class="p-float-label" style="width: 20rem;">
                         <Button
@@ -140,15 +144,17 @@
 
 <script setup>
 
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, provide, defineAsyncComponent } from 'vue';
 import { fetchById, updateRequest } from "@/utils/request"
 import { computed } from '@vue/reactivity';
 import { useVuelidate } from "@vuelidate/core";
 import { email, required } from "@vuelidate/validators";
+import ProgressSpinner from 'primevue/progressspinner';
 import { useToast } from "primevue/usetoast";
 import { useRouter, useRoute } from 'vue-router'
 import Map from "@/components/Map.vue"
 import axios from 'axios';
+
 
 const props = defineProps(['id'])
 const account = ref()
@@ -159,8 +165,9 @@ const selectedLocation = ref();
 const currentLocation = ref();
 const router = useRouter()
 
-currentLocation.value = [-74.00400424469672,5.0265836334697696]
+currentLocation.value = [-74.00400424469672, 5.0265836334697696]
 const imageFileSeleceted = ref();
+
 
 
 const planList = ref([
@@ -178,23 +185,34 @@ const state = reactive({
     phone: ''
 });
 
-
-onMounted(async () => {
-    const response = await fetchById('accounts', props.id);
-    const {name, email, phone} = response.data;
+const MapAsync = defineAsyncComponent({
+    loader: async () => {
+        await setStates();
+        return import("@/components/Map.vue");
+    },
+    loadingComponent: ProgressSpinner,
+    errorComponent: ProgressSpinner,
+    delay: 200,
+    timeout: 3000
+})
+async function setStates() {
+    const response = await fetchById('restaurants', props.id);
+    const { name, email, phone } = response.data;
     state.name = name;
     state.email = email;
     state.phone = phone;
     selectedPlan.value = response.data.selectedPlan;
     currentLocation.value = response.data.selectedLocation;
     selectedLocation.value = response.data.selectedLocation;
-    imageFileSeleceted.value = response.data.imageUrl
-})
+    imageFileSeleceted.value = response.data.image.url;
+
+}
+// onMounted(async () => setStates())
 const mustBeEqual = () => state.password === state.password2
 
 const onImageSelected = (event, event2) => {
-    if (!Array.isArray(event.files)) return 
-    imageFileSeleceted.value= event.files[0]
+    if (!Array.isArray(event.files)) return
+    imageFileSeleceted.value = event.files[0]
 }
 
 const onImageRemoved = (event) => {
@@ -208,6 +226,7 @@ const rules = {
     password: {},
     password2: {}
 };
+
 const completed = computed(() => {
     const inputList = Object.values(state);
     inputList.push(selectedPlan.value);
@@ -231,12 +250,12 @@ const resetForm = () => {
 
 const v$ = useVuelidate(rules, state);
 
-const handleSubmit =  (isFormValid) => {
+const handleSubmit = (isFormValid) => {
     submitted.value = true;
     if (!isFormValid) {
         return;
     }
-    sendFormData().then(x => router.push({name: 'see Accounts'}));
+    sendFormData().then(x => router.push({ name: 'see Accounts' }));
 }
 
 const formatCoordenatesString = (str) => {
@@ -254,28 +273,28 @@ const sendFormData = async () => {
         }
         //formData = {name,phone,email}
         const body = {
-        ...formData,
+            ...formData,
             selectedPlan: selectedPlan.value,
             selectedLocation: JSON.stringify(selectedLocation.value)
         }
         const formDataInstance = new FormData();
 
-        formDataInstance.append('image',imageFileSeleceted.value,imageFileSeleceted.value.name)
+        formDataInstance.append('image', imageFileSeleceted.value, imageFileSeleceted.value.name)
 
-        for (let key in body){
-            formDataInstance.append(key,body[key])
-        }   
+        for (let key in body) {
+            formDataInstance.append(key, body[key])
+        }
 
         const id = props.id;
-         
+
         const url = process.env.VUE_APP_URL;
 
         const res = await axios({
-                method: "put",
-                url:`${url}/accounts/${id}`,
-                data: formDataInstance,
-                headers: {"Content-Type":"multipart/form-data"}
-            });
+            method: "put",
+            url: `${url}/accounts/${id}`,
+            data: formDataInstance,
+            headers: { "Content-Type": "multipart/form-data" }
+        });
         console.log("🚀 ~ file: EditAccount.vue ~ line 270 ~ sendFormData ~ res", res)
         if (res.request.status !== 200) {
             return toast.add({ severity: 'error', summary: 'Error', detail: res.response.data.message, life: 3000 });
@@ -291,6 +310,10 @@ const handleLocationChanged = (locationChanged) => {
     currentLocation.value = locationChanged
 };
 
+provide('location', selectedLocation.value)
+provide('IsFormEditing', completed.value)
+provide('name', state.name)
+
 
 </script>
 
@@ -303,14 +326,14 @@ const handleLocationChanged = (locationChanged) => {
     }
 }
 
-.image-container{
-        width: 6rem;
+.image-container {
+    width: 6rem;
+    height: 100%;
     margin: 0 auto;
-    position: absolute;
-    top: -77px;
-    left: 0;
-    img{
-            width: 100%;
+    overflow: hidden;
+    img {
+        width: 100%;
+        object-fit: cover;
     }
 }
 </style>

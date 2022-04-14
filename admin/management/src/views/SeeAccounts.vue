@@ -60,13 +60,11 @@ const coordenates = ref("");
 const accountsList = ref();
 
 onMounted(async () => {
-    const res = await fetchAll('accounts');
-    console.log("🚀 ~ file: SeeAccounts.vue ~ line 64 ~ onMounted ~ res", res)
+    const res = await fetchAll('restaurants');
     accountsList.value = res.data;
 })
 
 const toggleDialog = (cord) => {
-    console.log("🚀 ~ file: SeeAccounts.vue ~ line 68 ~ toggleDialog ~ cord", cord)
     display.value = !display.value;
     coordenates.value = cord
 }
@@ -85,10 +83,9 @@ const deleteRestaurant = async (id) => {
     try {
         const accountFound = accountsList.value.find(acc => acc._id === id);
         const {name = ""} = accountFound;
-        const res = await deleteById('accounts',id);
+        const res = await deleteById('restaurants',id);
         const msg = `${name} ${res?.data?.msg}`
         toast.add({severity:'success', summary: 'Operacion Exitosa', detail:msg, life: 3000});
-        console.log("🚀 ~ file: SeeAccounts.vue ~ line 82 ~ deleteRestaurant ~ res", res)
         accountsList.value = accountsList.value.filter(account => account._id !== id);
     } catch (error) {
         toast.add({severity:'error', summary: 'error en la peticion', detail:'Message Content', life: 3000});

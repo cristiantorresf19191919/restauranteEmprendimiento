@@ -13,13 +13,17 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, onUpdated } from 'vue';
+import { ref, reactive, onMounted, watch, onUpdated, inject } from 'vue';
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import { useToast } from "primevue/usetoast";
+
+
 const toast = useToast();
 const props = defineProps(['location', 'name','IsFormEditing'])
+const locationInjected = inject('location')
+
 const location = ref(props.location)
 const coordenatesInfo = ref();
 coordenatesInfo.value = props.location;
@@ -94,31 +98,26 @@ function loadMap() {
                 coordenatesInfo.value = {longitude, latitude};
                      marker1.setLngLat([longitude, latitude])
                 emit("locationChanged", coordenatesInfo.value)
-                // showToastMsg('La ubicacion de tu restaurante se ha actualizado con exito')
+                showToastMsg('La ubicacion de tu restaurante se ha actualizado con exito')
             })
         )
     });
 }
 
 
-onMounted(() => {
+onMounted(() => {    
+    console.log("🚀 ~ file: Map.vue ~ line 112 ~ onMounted ~ locationInjected", locationInjected)
     loadMap()
 })
 
 onUpdated(() => {
     if (!props?.location) return
-    // eliminar renders infinitos
-    props.IsFormEditing
+    // eliminar renders infinitos    
     console.log("🚀 ~ file: Map.vue ~ line 111 ~ onUpdated ~ props.IsFormEditing", props.IsFormEditing)
     if(props.IsFormEditing >= 75) return
     loadMap()
 })
 
-
-// watch(coordenatesInfo, function (newValue, oldValue) {
-//     if(!newValue) return
-    
-// });
 
 </script>
 <style lang="scss">

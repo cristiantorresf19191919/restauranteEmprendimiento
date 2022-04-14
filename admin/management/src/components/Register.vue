@@ -97,6 +97,7 @@
                             @upload="onImageUploaded"
                             :multiple="false"
                             :url="sendPicUrl()"
+                            :previewWidth="200"
                             chooseLabel="Escoger"
                             :showUploadButton="false"
                             uploadLabel="Subir"
@@ -245,7 +246,6 @@ const sendFormData = async () => {
             selectedPlan: selectedPlan.value,
             selectedLocation: JSON.stringify(selectedLocation.value),            
         }
-        console.log("🚀 ~ file: Register.vue ~ line 263 ~ sendFormData ~ bodyPayload", bodyPayload);
         let formDataInstance = new FormData();
         if (imageFileSeleceted.value){
             formDataInstance.append('image',imageFileSeleceted.value,imageFileSeleceted.value.name);
@@ -261,16 +261,7 @@ const sendFormData = async () => {
             url:`${url}/auth/register`,
             data: formDataInstance,
             headers: {"Content-Type":"multipart/form-data"}
-        });
-        console.log("🚀 ~ file: Register.vue ~ line 264 ~ sendFormData ~ response", response)
-        
-        // const res = await register({...bodyPayload})
-     
-     /*    p(res.status)
-        p(res.response)
-        if (res.request.status !== 201) {
-            return toast.add({ severity: 'error', summary: 'Error', detail: res.response.data.message, life: 3000 });
-        } */
+        });     
         resetForm()
         return toast.add({ severity: 'success', summary: 'Excelent', detail: 'La cuenta se ha creado con exito', life: 3000 });
     } catch (error) {
